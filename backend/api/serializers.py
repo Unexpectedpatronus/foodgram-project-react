@@ -18,8 +18,10 @@ class MyUserSerializer(UserSerializer):
 
     class Meta:
         model = User
-        fields = ('id', 'email', 'username', 'first_name',
-                  'last_name', 'is_subscribed')
+        fields = (
+            'id', 'email', 'username', 'first_name',
+            'last_name', 'is_subscribed'
+        )
 
     def get_is_subscribed(self, obj):
         user = self.context.get('request').user
@@ -47,11 +49,15 @@ class FollowSerializer(MyUserSerializer):
 
     class Meta:
         model = User
-        fields = ('id', 'email', 'username', 'first_name',
-                  'last_name', 'recipes_count', 'recipes',
-                  'is_subscribed')
-        read_only_fields = ('email', 'username',
-                            'first_name', 'last_name')
+        fields = (
+            'id', 'email', 'username', 'first_name',
+            'last_name', 'recipes_count', 'recipes',
+            'is_subscribed'
+        )
+        read_only_fields = (
+            'email', 'username',
+            'first_name', 'last_name'
+        )
 
 
 class TagSerializer(serializers.ModelSerializer):
@@ -101,9 +107,11 @@ class RecipeGetSerializer(ModelSerializer):
 
     class Meta:
         model = Recipe
-        fields = ('id', 'tags', 'author', 'ingredients',
-                  'is_favorited', 'is_in_shopping_cart', 'name',
-                  'image', 'text', 'cooking_time')
+        fields = (
+            'id', 'tags', 'author', 'ingredients',
+            'is_favorited', 'is_in_shopping_cart', 'name',
+            'image', 'text', 'cooking_time'
+        )
 
     def get_is_favorited(self, obj):
         user = self.context['request'].user
@@ -129,8 +137,10 @@ class RecipeCreateSerializer(ModelSerializer):
 
     class Meta:
         model = Recipe
-        fields = ('id', 'tags', 'author', 'ingredients',
-                  'name', 'image', 'text', 'cooking_time')
+        fields = (
+            'id', 'tags', 'author', 'ingredients',
+            'name', 'image', 'text', 'cooking_time'
+        )
 
     def validate_tags(self, value):
         if not value:
@@ -141,19 +151,19 @@ class RecipeCreateSerializer(ModelSerializer):
         '''Валидатор ингредиентов.'''
         ingredients = value
         if not ingredients:
-            raise ValidationError({
-                'ingredients': 'Добавьте хотя бы один ингредиент!'
-            })
+            raise ValidationError(
+                {'ingredients': 'Добавьте хотя бы один ингредиент!'}
+            )
         ingredients_list = []
         for item in ingredients:
             if item['id'] in ingredients_list:
-                raise ValidationError({
-                    'ingredients': 'Ингредиенты не должны дублироваться!'
-                })
+                raise ValidationError(
+                    {'ingredients': 'Ингредиенты не должны дублироваться!'}
+                )
             if int(item['amount']) <= 0:
-                raise ValidationError({
-                    'amount': 'Количество должно быть больше нуля!'
-                })
+                raise ValidationError(
+                    {'amount': 'Количество должно быть больше нуля!'}
+                )
             ingredients_list.append(item['id'])
         return value
 
