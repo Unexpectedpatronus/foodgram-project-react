@@ -42,8 +42,10 @@ class RecipeShowSerializer(ModelSerializer):
 class FollowSerializer(MyUserSerializer):
     '''Сериализатор подписoк.'''
 
-    recipes_count = serializers.IntegerField(source='recipes.count',
-                                             read_only=True)
+    recipes_count = serializers.IntegerField(
+        source='recipes.count',
+        read_only=True
+    )
     recipes = RecipeShowSerializer(many=True, read_only=True)
     is_subscribed = serializers.BooleanField(default=True)
 
@@ -100,7 +102,9 @@ class RecipeGetSerializer(ModelSerializer):
     tags = TagSerializer(many=True, read_only=True)
     author = MyUserSerializer(read_only=True)
     ingredients = IngredientRecipeCreationSerializer(
-        source='recipeingredient', many=True)
+        source='recipeingredient',
+        many=True
+    )
     image = Base64ImageField()
     is_favorited = SerializerMethodField(read_only=True)
     is_in_shopping_cart = SerializerMethodField(read_only=True)
