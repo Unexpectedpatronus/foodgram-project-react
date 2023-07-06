@@ -1,87 +1,80 @@
 from django.contrib.auth.models import AbstractUser
 from django.contrib.auth.validators import UnicodeUsernameValidator
-from django.core.exceptions import ValidationError
 from django.db import models
+from django.db.models import UniqueConstraint
 
 
 class User(AbstractUser):
-    username_validator = UnicodeUsernameValidator()
+    '''Модель пользователя.'''
+
+    USERNAME_FIELD = 'email'
+    REQUIRED_FIELDS = ['username', 'first_name', 'last_name']
+
     email = models.EmailField(
-        verbose_name='Электронная почта',
-        blank=False,
-        unique=True,
+        verbose_name='Почта',
         max_length=254,
-        error_messages={
-            'unique': 'Такая электронная почта уже есть!'
-        },
+        unique=True
     )
     username = models.CharField(
-        verbose_name='логин',
-        max_length=150,
+        verbose_name='Имя пользователя',
         unique=True,
-        help_text='Не более 150 символов.',
-        validators=[username_validator],
-        error_messages={
-            'unique': 'Пользователь с таким логином уже существует!'
-        },
+        validators=[UnicodeUsernameValidator],
+        max_length=150
     )
-    first_name = models.CharField(verbose_name='имя', max_length=150)
-    last_name = models.CharField(verbose_name='фамилия', max_length=150)
-    is_superuser = models.BooleanField(default=False)
-    is_active = models.BooleanField(default=True)
-    REQUIRED_FIELDS = ['username', 'first_name', 'last_name']
-    USERNAME_FIELD = 'email'
+    first_name = models.CharField(
+        verbose_name='Имя',
+        max_length=150
+    )
+    last_name = models.CharField(
+        verbose_name='Фамилия',
+        max_length=150
+    )
+    password = models.CharField(
+        verbose_name='Пароль',
+        max_length=150
+    )
 
     class Meta:
         verbose_name = 'Пользователь'
         verbose_name_plural = 'Пользователи'
-        ordering = ('username',)
-        constraints = [
-            models.CheckConstraint(
-                check=~models.Q(username='me'),
-                name='Имя "me" недопустимо!',
-            )
-        ]
-
-    def save(self, *args, **kwargs):
-        if self.username == 'me':
-            return ValidationError('Использование "me" в качестве логина запрещено!')
-        super().save(*args, **kwargs)
-
-    @property
-    def is_admin(self):
-        return self.is_superuser
-
-    def get_full_name(self):
-        return f'{self.first_name} {self.last_name}'
-
-    def get_short_name(self):
-        return f'{self.username[:10]}'
+        ordering = ('pk',)
+        constraints = (
+            models.UniqueConstraint(
+                fields=('email', 'username'),
+                name='unique_auth'
+            ),
+        )
 
     def __str__(self):
         return self.username
 
 
 class Follow(models.Model):
+    '''Модель подписок.'''
+
     user = models.ForeignKey(
         User,
-        on_delete=models.CASCADE,
-        related_name='follower',
         verbose_name='Подписчик',
+        on_delete=models.CASCADE,
+        related_name='follower'
     )
     author = models.ForeignKey(
         User,
+        verbose_name='Автор',
         on_delete=models.CASCADE,
-        related_name='following',
-        verbose_name='Автор'
+        related_name='following'
     )
 
     class Meta:
-        verbose_name = 'Подписка'
-        verbose_name_plural = 'Подписки'
+        verbose_name = 'Подписчик'
+        verbose_name_plural = 'Подписчики'
+        ordering = ('-pk',)
         constraints = [
-            models.UniqueConstraint(
+            UniqueConstraint(
                 fields=('user', 'author'),
-                name='unique_user_follow'
-            )
+                name='unique_subscription'
+            ),
         ]
+
+    def __str__(self):
+        return self.user
