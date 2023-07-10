@@ -1,3 +1,13 @@
+from django.db.models.aggregates import Sum
+from django.http import HttpResponse
+from django.shortcuts import get_object_or_404
+from django_filters.rest_framework import DjangoFilterBackend
+from djoser.views import UserViewSet
+from rest_framework import status, viewsets
+from rest_framework.decorators import action
+from rest_framework.permissions import SAFE_METHODS, IsAuthenticated
+from rest_framework.response import Response
+
 from api.filters import NameSearchFilter, RecipeFilter
 from api.pagination import CustomPagination
 from api.permissions import IsAdminOrReadOnly, IsAuthorOrReadOnly
@@ -5,16 +15,7 @@ from api.serializers import (FollowSerializer, IngredientSerializer,
                              MyUserSerializer, RecipeCreateSerializer,
                              RecipeGetSerializer, RecipeIngredient,
                              RecipeShowSerializer, TagSerializer)
-from django.db.models.aggregates import Sum
-from django.http import HttpResponse
-from django.shortcuts import get_object_or_404
-from django_filters.rest_framework import DjangoFilterBackend
-from djoser.views import UserViewSet
 from recipes.models import Favourite, Ingredient, Recipe, ShoppingCart, Tag
-from rest_framework import status, viewsets
-from rest_framework.decorators import action
-from rest_framework.permissions import SAFE_METHODS, IsAuthenticated
-from rest_framework.response import Response
 from users.models import Follow, User
 
 SHOP_LIST = 'Список покупок:'
@@ -22,7 +23,7 @@ FILE = 'shopping_list.txt'
 
 
 class MyUserViewSet(UserViewSet):
-    '''Вьюсет для пользователей и подписок.'''
+    """Вьюсет для пользователей и подписок."""
 
     queryset = User.objects.all()
     serializer_class = MyUserSerializer
@@ -30,45 +31,55 @@ class MyUserViewSet(UserViewSet):
 
     @action(detail=False,
             methods=['GET'],
-            permission_classes=[IsAuthenticated])
+            permission_classes=(IsAuthenticated,))
     def subscriptions(self, request):
         user = request.user
         queryset = User.objects.filter(following__user=user)
         page = self.paginate_queryset(queryset)
-        serializer = FollowSerializer(page,
-                                      many=True,
-                                      context={'request': request})
+        serializer = FollowSerializer(
+            page,
+            many=True,
+            context={'request': request}
+        )
         return self.get_paginated_response(serializer.data)
 
     @action(detail=True,
             methods=['POST', 'DELETE'],
-            permission_classes=[IsAuthenticated])
+            permission_classes=(IsAuthenticated,))
     def subscribe(self, request, id):
         user = request.user
         author = get_object_or_404(User, id=id)
 
         if request.method == 'POST':
             if user.id == author.id:
-                return Response({'detail': 'Нельзя подписаться на себя!'},
-                                status=status.HTTP_400_BAD_REQUEST)
+                return Response(
+                    {'detail': 'Нельзя подписаться на себя!'},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
             if Follow.objects.filter(author=author, user=user).exists():
-                return Response({'detail': 'Вы уже подписаны!'},
-                                status=status.HTTP_400_BAD_REQUEST)
+                return Response(
+                    {'detail': 'Вы уже подписаны!'},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
             Follow.objects.create(user=user, author=author)
-            serializer = FollowSerializer(author,
-                                          context={'request': request})
+            serializer = FollowSerializer(
+                author,
+                context={'request': request}
+            )
             return Response(serializer.data, status=status.HTTP_201_CREATED)
 
         if not Follow.objects.filter(user=user, author=author).exists():
-            return Response({'errors': 'Сначала нужно подписаться!'},
-                            status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {'errors': 'Сначала нужно подписаться!'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
         subscription = get_object_or_404(Follow, user=user, author=author)
         subscription.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 class IngredientViewSet(viewsets.ReadOnlyModelViewSet):
-    '''Вьюсет ингредиентов.'''
+    """Вьюсет ингредиентов."""
 
     queryset = Ingredient.objects.all()
     serializer_class = IngredientSerializer
@@ -79,15 +90,15 @@ class IngredientViewSet(viewsets.ReadOnlyModelViewSet):
 
 
 class RecipeViewSet(viewsets.ModelViewSet):
-    '''Вьюсет рецептов.'''
+    """Вьюсет рецептов."""
 
     queryset = Recipe.objects.all()
     permission_classes = (IsAuthorOrReadOnly,)
     pagination_class = CustomPagination
     filter_backends = (DjangoFilterBackend,)
     filterset_class = RecipeFilter
-    http_method_names = [
-        m for m in viewsets.ModelViewSet.http_method_names if m not in ['PUT']
+    allowed_methods = [
+        method for method in viewsets.ModelViewSet.http_method_names if method != 'PUT'
     ]
 
     def get_serializer_class(self):
@@ -116,8 +127,10 @@ class RecipeViewSet(viewsets.ModelViewSet):
 
     def post_method(self, model, user, pk):
         if model.objects.filter(user=user, recipe__id=pk).exists():
-            return Response({'errors': 'Рецепт уже в списке'},
-                            status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {'errors': 'Рецепт уже в списке'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
         recipe = get_object_or_404(Recipe, id=pk)
         model.objects.create(user=user, recipe=recipe)
         serializer = RecipeShowSerializer(recipe)
@@ -128,8 +141,10 @@ class RecipeViewSet(viewsets.ModelViewSet):
         if obj.exists():
             obj.delete()
             return Response(status=status.HTTP_204_NO_CONTENT)
-        return Response({'errors': 'Рецепта нет в списке'},
-                        status=status.HTTP_400_BAD_REQUEST)
+        return Response(
+            {'errors': 'Рецепта нет в списке'},
+            status=status.HTTP_400_BAD_REQUEST
+        )
 
     @action(detail=False,
             methods=['GET'],
@@ -156,7 +171,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
 
 
 class TagViewSet(viewsets.ReadOnlyModelViewSet):
-    '''Вьюсет тегов.'''
+    """Вьюсет тегов."""
 
     queryset = Tag.objects.all()
     serializer_class = TagSerializer

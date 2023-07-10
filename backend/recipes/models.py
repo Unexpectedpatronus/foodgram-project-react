@@ -1,24 +1,31 @@
-from django.core.validators import MinValueValidator
+from colorfield.fields import ColorField
+from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 from django.db.models import UniqueConstraint
+
 from users.models import User
+
+MAXLENGTH: int = 15
 
 
 class Tag(models.Model):
-    '''Модель тегов.'''
+    """Модель тегов."""
 
     name = models.CharField(
-        verbose_name='Имя тега',
+        'Имя тега',
         max_length=200,
         unique=True
     )
-    color = models.CharField(
-        verbose_name='Цвет HEX-код',
-        max_length=7,
-        unique=True
+    COLOR_PALETTE = [
+        ("#FFFFFF", "white",),
+        ("#000000", "black",),
+    ]
+    color = ColorField(
+        format="hexa",
+        samples=COLOR_PALETTE
     )
     slug = models.SlugField(
-        verbose_name='Слаг',
+        'Слаг',
         max_length=200,
         unique=True
     )
@@ -28,11 +35,11 @@ class Tag(models.Model):
         verbose_name_plural = 'Теги'
 
     def __str__(self):
-        return self.name
+        return self.name[:MAXLENGTH]
 
 
 class Ingredient(models.Model):
-    '''Модель ингредиента.'''
+    """Модель ингредиента."""
 
     name = models.CharField(
         verbose_name='Название',
@@ -49,11 +56,11 @@ class Ingredient(models.Model):
         ordering = ('pk',)
 
     def __str__(self):
-        return self.name
+        return self.name[:MAXLENGTH]
 
 
 class Recipe(models.Model):
-    '''Модель рецепта.'''
+    """Модель рецепта."""
 
     author = models.ForeignKey(
         User,
@@ -79,13 +86,13 @@ class Recipe(models.Model):
         Tag,
         verbose_name='Тег',
         related_name='recipes',
-        blank=False
     )
     cooking_time = models.PositiveSmallIntegerField(
         verbose_name='Время приготовления, мин',
-        validators=[
-            MinValueValidator(1, message='Минимальное значение - 1!')
-        ]
+        validators=(
+            MinValueValidator(1, message='Минимальное значение = 1!'),
+            MaxValueValidator(32767, message='Максимальное значение = 32767!')
+        )
     )
     date = models.DateTimeField(
         verbose_name='Дата публикации',
@@ -98,11 +105,11 @@ class Recipe(models.Model):
         ordering = ('-date',)
 
     def __str__(self):
-        return str(self.name)
+        return self.name[:MAXLENGTH]
 
 
 class RecipeIngredient(models.Model):
-    '''Модель ингредиентов для рецепта.'''
+    """Модель ингредиентов для рецепта."""
 
     recipe = models.ForeignKey(
         Recipe,
@@ -118,25 +125,28 @@ class RecipeIngredient(models.Model):
     )
     amount = models.PositiveSmallIntegerField(
         verbose_name='Количество',
-        validators=[MinValueValidator(1)]
+        validators=(
+            MinValueValidator(1),
+            MaxValueValidator(32767)
+        )
     )
 
     class Meta:
         verbose_name = 'Ингредиент для рецепта'
         verbose_name_plural = 'Ингредиенты для рецепта'
-        constraints = [
+        constraints = (
             UniqueConstraint(
                 fields=('recipe', 'ingredient'),
                 name='recipeingredient'
             ),
-        ]
+        )
 
     def __str__(self):
         return f'{str(self.ingredient)} in {str(self.recipe)}-{self.amount}'
 
 
 class Favourite(models.Model):
-    '''Модель избранного.'''
+    """Модель избранного."""
 
     user = models.ForeignKey(
         User,
@@ -154,18 +164,18 @@ class Favourite(models.Model):
     class Meta:
         verbose_name = 'Избранное'
         verbose_name_plural = 'Избранные'
-        constraints = [
+        constraints = (
             UniqueConstraint(
                 fields=('user', 'recipe'),
                 name='unique_favourite'),
-        ]
+        )
 
     def __str__(self):
         return f'Добавлено в избранное {self.recipe}'
 
 
 class ShoppingCart(models.Model):
-    '''Модель списка покупок.'''
+    """Модель списка покупок."""
 
     user = models.ForeignKey(
         User,
@@ -183,11 +193,11 @@ class ShoppingCart(models.Model):
     class Meta:
         verbose_name = 'Покупка'
         verbose_name_plural = 'Покупки'
-        constraints = [
+        constraints = (
             UniqueConstraint(
                 fields=('user', 'recipe'),
                 name='unique_shopping_cart'),
-        ]
+        )
 
     def __str__(self):
         return f'Добавлено в корзину {self.recipe}'

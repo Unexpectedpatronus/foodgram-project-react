@@ -1,14 +1,15 @@
 from django.contrib.auth.models import AbstractUser
 from django.contrib.auth.validators import UnicodeUsernameValidator
+from django.core.exceptions import ValidationError
 from django.db import models
 from django.db.models import UniqueConstraint
 
 
 class User(AbstractUser):
-    '''Модель пользователя.'''
+    """Модель пользователя."""
 
     USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = ['username', 'first_name', 'last_name']
+    REQUIRED_FIELDS = ('username', 'first_name', 'last_name')
 
     email = models.EmailField(
         verbose_name='Почта',
@@ -18,7 +19,7 @@ class User(AbstractUser):
     username = models.CharField(
         verbose_name='Имя пользователя',
         unique=True,
-        validators=[UnicodeUsernameValidator],
+        validators=(UnicodeUsernameValidator,),
         max_length=150
     )
     first_name = models.CharField(
@@ -50,7 +51,7 @@ class User(AbstractUser):
 
 
 class Follow(models.Model):
-    '''Модель подписок.'''
+    """Модель подписок."""
 
     user = models.ForeignKey(
         User,
@@ -69,12 +70,17 @@ class Follow(models.Model):
         verbose_name = 'Подписчик'
         verbose_name_plural = 'Подписчики'
         ordering = ('-pk',)
-        constraints = [
+        constraints = (
             UniqueConstraint(
                 fields=('user', 'author'),
                 name='unique_subscription'
             ),
-        ]
+        )
+
+    def clean(self):
+        if self.user == self.author:
+            raise ValidationError('Нельзя подписаться на самого себя!')
+        super().clean()
 
     def __str__(self):
-        return self.user
+        return f'{self.user} <-> {self.author}'
