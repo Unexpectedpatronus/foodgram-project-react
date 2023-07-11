@@ -16,7 +16,7 @@ services:
       - ../.env
 
   backend:
-    container_name: foodgram-backend
+    container_name: foodgram-app
     image: unexpectedpatronus/foogram_backend:latest
     restart: always
     volumes:
@@ -24,16 +24,12 @@ services:
       - media_volume:/app/media/
     env_file:
       - ../.env
-    depends_on:
-      - db
 
   frontend:
-    container_name: foodgram-frontend
+    container_name: foodgram-front
     image: unexpectedpatronus/foodgram_frontend:latest
     volumes:
       - ../frontend/:/app/result_build/
-    depends_on:
-      - db
 
   nginx:
     container_name: foodgram-proxy
