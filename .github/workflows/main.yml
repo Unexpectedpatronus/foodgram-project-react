@@ -34,7 +34,7 @@ jobs:
           username: ${{ secrets.USER }}
           key: ${{ secrets.SSH_KEY }}
           passphrase: ${{ secrets.SSH_PASSPHRASE }}
-          source: "docker-compose.yml,nginx.conf"
+          source: "infra/docker-compose.yml,infra/nginx.conf"
           target: "foodgram"
       - name: Copy /docs/ via scp
         uses: appleboy/scp-action@master
