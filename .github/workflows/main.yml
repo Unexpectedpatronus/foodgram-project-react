@@ -36,7 +36,6 @@ jobs:
           passphrase: ${{ secrets.SSH_PASSPHRASE }}
           source: "infra/docker-compose.yml,infra/nginx.conf"
           target: "foodgram"
-          strip_components: 1
       - name: Copy /docs/ via scp
         uses: appleboy/scp-action@master
         with:
@@ -126,8 +125,7 @@ jobs:
             echo "from django.contrib.auth import get_user_model; User = get_user_model(); User.objects.create_superuser(${{ secrets.DJANGO_ADM_NAME }}, ${{ secrets.DJANGO_ADM_EMAIL }}, ${{ secrets.DJANGO_ADM_PASSWORD }})" | python manage.py shell
             sudo docker-compose exec -T backend python manage.py load_tags
             sudo docker-compose exec -T backend python manage.py load_data
-            
-            sudo docker system prune -af
+
 
   send_message:
     runs-on: ubuntu-latest
