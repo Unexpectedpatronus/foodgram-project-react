@@ -27,7 +27,7 @@ jobs:
     steps:
       - name: Checkout the repo
         uses: actions/checkout@v3
-      - name: Copy /infra/ via scp
+      - name: Copy infra via scp
         uses: appleboy/scp-action@master
         with:
           host: ${{ secrets.HOST }}
@@ -35,7 +35,7 @@ jobs:
           key: ${{ secrets.SSH_KEY }}
           passphrase: ${{ secrets.SSH_PASSPHRASE }}
           source: "infra/docker-compose.yml,infra/nginx.conf"
-          target: "foodgram"
+          target: "foodgram/"
       - name: Copy /docs/ via scp
         uses: appleboy/scp-action@master
         with:
