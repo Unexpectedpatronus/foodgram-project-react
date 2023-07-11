@@ -21,6 +21,7 @@ jobs:
       - name: Test with flake8
         run: python -m flake8 backend/
 
+
   copy_files_to_server:
     name: Copy infra and docs
     runs-on: ubuntu-latest
