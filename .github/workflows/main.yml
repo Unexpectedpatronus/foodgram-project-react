@@ -120,16 +120,18 @@ jobs:
             echo DB_HOST=${{ secrets.DB_HOST }} >> .env
             echo DB_PORT=${{ secrets.DB_PORT }} >> .env
             
-            sudo docker compose pull
-            sudo docker compose stop
+            sudo docker-compose stop
+            sudo docker ps -a | grep Exit | cut -d ' ' -f 1 | xargs sudo docker rm
+            sudo docker rmi ${{ secrets.DOCKER_USER }}/foodgram_frontend
+            sudo docker rmi ${{ secrets.DOCKER_USER }}/foodgram_backend
             sudo docker compose up -d
             sudo docker exec -t backend python manage.py migrate --no-input
             sudo docker exec -t backend python manage.py collectstatic --no-input
             sudo docker exec -t backend cp -r /app/static/. /backend_static/
-            sudo docker exec -t backend python manage.py load_tags --no-input
-            sudo docker exec -t backend python manage.py load_data --no-input
+            sudo docker exec -t backend python manage.py load_tags
+            sudo docker exec -t backend python manage.py load_data
             
-            sudo docker system prune -af
+            sudo docker image prune -a
 
   send_message:
     runs-on: ubuntu-latest
