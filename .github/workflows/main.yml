@@ -123,8 +123,8 @@ jobs:
             sudo docker compose pull
             sudo docker compose stop
             sudo docker compose up -d --build
-            sudo docker exec -t backend python manage.py migrate
-            sudo docker exec -t backend python manage.py collectstatic
+            sudo docker exec -t backend python manage.py migrate --no-input
+            sudo docker exec -t backend python manage.py collectstatic --no-input
             
             echo "from django.contrib.auth import get_user_model; User = get_user_model(); \
             User.objects.create_superuser(${{ secrets.DJANGO_ADM_NAME }}, ${{ secrets.DJANGO_ADM_EMAIL }}, ${{ secrets.DJANGO_ADM_PASSWORD }})" \
