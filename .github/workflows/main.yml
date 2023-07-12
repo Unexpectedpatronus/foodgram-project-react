@@ -94,6 +94,8 @@ jobs:
       - build_push_frontend_to_DockerHub
       - copy_files_to_server
     steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
       - name: Executing remote ssh commands to deploy
         uses: appleboy/ssh-action@master
         with:
