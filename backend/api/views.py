@@ -98,7 +98,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
     filter_backends = (DjangoFilterBackend,)
     filterset_class = RecipeFilter
     allowed_methods = [
-        method for method in viewsets.ModelViewSet.http_method_names if method != 'PUT'
+        method for method in viewsets.ModelViewSet.http_method_names if method != 'PUT'  # noqa
     ]
 
     def get_serializer_class(self):
