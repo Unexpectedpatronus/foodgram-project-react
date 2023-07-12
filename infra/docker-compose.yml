@@ -25,14 +25,12 @@ services:
       - media_volume:/app/media/
     env_file:
       - ../.env
-    depends_on:
-      - db
 
   frontend:
     container_name: frontend
     image: unexpectedpatronus/foodgram_frontend:latest
     volumes:
-      - ./frontend/:/app/result_build/
+      - ../frontend/:/app/result_build/
 
   nginx:
     image: nginx:1.23.3-alpine
@@ -45,6 +43,3 @@ services:
       - ../docs/:/usr/share/nginx/html/api/docs/
       - static_volume:/etc/nginx/html/static/
       - media_volume:/etc/nginx/html/media/
-    depends_on:
-      - backend
-      - frontend
