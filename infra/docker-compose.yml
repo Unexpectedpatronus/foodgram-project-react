@@ -5,21 +5,21 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data/
     env_file:
-      - ./.env
+      - ../.env
 
   backend:
-    image: unexpectedpatronus/foodgram_backend:latest
+    build: ../backend
     restart: always
     volumes:
-      - static_value:/app/static/
+      - static_value:/backend_static/
       - media_value:/app/media/
     depends_on:
       - db
     env_file:
-      - ./.env
+      - ../.env
 
   frontend:
-    image: unexpectedpatronus/foodgram_frontend:latest
+    build: ../frontend
     volumes:
       - ../frontend/:/app/result_build/
     depends_on:
