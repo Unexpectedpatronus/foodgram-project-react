@@ -139,7 +139,7 @@ class RecipeIngredient(models.Model):
         )
 
     def __str__(self):
-        return f'{str(self.ingredient)} in {str(self.recipe)}-{self.amount}'
+        return f'{self.ingredient} ({self.amount}) in {self.recipe}'
 
 
 class Favourite(models.Model):
@@ -164,7 +164,8 @@ class Favourite(models.Model):
         constraints = (
             UniqueConstraint(
                 fields=('user', 'recipe'),
-                name='unique_favourite'),
+                name='unique_favourite'
+            ),
         )
 
     def __str__(self):
