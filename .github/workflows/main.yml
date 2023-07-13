@@ -119,6 +119,7 @@ jobs:
             echo DB_HOST=${{ secrets.DB_HOST }} >> .env
             echo DB_PORT=${{ secrets.DB_PORT }} >> .env
             cd infra
+            sudo docker-compose pull
             sudo docker-compose down
             sudo docker compose up -d --build
             sudo docker container exec -t backend python manage.py makemigraions
