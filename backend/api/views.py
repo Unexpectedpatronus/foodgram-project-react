@@ -97,8 +97,8 @@ class RecipeViewSet(viewsets.ModelViewSet):
     pagination_class = CustomPagination
     filter_backends = (DjangoFilterBackend,)
     filterset_class = RecipeFilter
-    allowed_methods = [
-        method for method in viewsets.ModelViewSet.http_method_names if method != 'PUT'  # noqa
+    http_method_names = [
+        m for m in viewsets.ModelViewSet.http_method_names if m != 'PUT'  #noqa
     ]
 
     def get_serializer_class(self):
