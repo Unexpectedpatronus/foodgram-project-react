@@ -1,9 +1,24 @@
+from django import forms
 from django.contrib import admin
+from django.forms.models import BaseInlineFormSet
 
 from recipes.models import (Favourite, Ingredient, Recipe, RecipeIngredient,
                             ShoppingCart, Tag)
 
 EMPTY_STRING: str = '-пусто-'
+
+
+class RequiredInlineFormSet(BaseInlineFormSet):
+    def clean(self):
+        super().clean()
+        if not any(form.cleaned_data for form in self.forms):
+            raise forms.ValidationError('Должен быть хотя бы 1 ингредиент.')
+
+
+class RecipeIngredientInline(admin.TabularInline):
+    model = Recipe.ingredients.through
+    extra = 1
+    formset = RequiredInlineFormSet
 
 
 @admin.register(Recipe)
@@ -16,8 +31,12 @@ class RecipeAdmin(admin.ModelAdmin):
         'get_tags',
         'count_favourites',
     )
+
+    inlines = [RecipeIngredientInline]
+
     search_fields = ('author__username', 'name', 'tags__name',)
-    list_filter = ('author', 'name', 'tags',)
+
+    list_filter = ('author', 'name', 'tags')
 
     def get_ingredients(self, object):
         return ',\n'.join(
