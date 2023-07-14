@@ -16,10 +16,14 @@ class Tag(models.Model):
         max_length=200,
         unique=True
     )
-
+    COLOR_PALETTE = [
+        ("#E26C2D", "Завтрак",),
+        ("#008000", "Обед",),
+        ("#7366BD", "Ужин",),
+    ]
     color = ColorField(
         format="hexa",
-        unique=True
+        samples=COLOR_PALETTE
     )
 
     slug = models.SlugField(
