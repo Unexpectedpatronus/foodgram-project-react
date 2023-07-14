@@ -9,9 +9,9 @@ EMPTY_VALUE = '-пусто-'
 class UsersAdmin(admin.ModelAdmin):
     list_display = (
         'username', 'email', 'first_name',
-        'last_name', 'password',
+        'last_name',
     )
-    search_fields = ('username', 'email',)
+    search_fields = ('username', 'email', 'first_name', 'last_name',)
     list_filter = ('username', 'email',)
     empty_value = EMPTY_VALUE
 

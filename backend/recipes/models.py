@@ -19,6 +19,7 @@ class Tag(models.Model):
 
     color = ColorField(
         format="hexa",
+        unique=True
     )
 
     slug = models.SlugField(
@@ -30,6 +31,7 @@ class Tag(models.Model):
     class Meta:
         verbose_name = 'Тег'
         verbose_name_plural = 'Теги'
+        ordering = ['-id']
 
     def __str__(self):
         return self.name[:MAXLENGTH]
@@ -39,21 +41,21 @@ class Ingredient(models.Model):
     """Модель ингредиента."""
 
     name = models.CharField(
-        verbose_name='Название',
+        'Название ингредиента',
         max_length=200
     )
     measurement_unit = models.CharField(
-        verbose_name='Единица измерения',
-        max_length=200
+        'Единица измерения ингредиента',
+        max_length=20
     )
 
     class Meta:
         verbose_name = 'Ингредиент'
         verbose_name_plural = 'Ингредиенты'
-        ordering = ('pk',)
+        ordering = ('name',)
 
     def __str__(self):
-        return self.name[:MAXLENGTH]
+        return f'{self.name} ({self.measurement_unit}).'
 
 
 class Recipe(models.Model):
@@ -61,18 +63,23 @@ class Recipe(models.Model):
 
     author = models.ForeignKey(
         User,
-        verbose_name='Автор',
+        verbose_name='Автор рецепта',
         on_delete=models.CASCADE,
         related_name='recipes',
     )
     name = models.CharField(
-        verbose_name='Название',
-        max_length=200)
-    image = models.ImageField(
-        verbose_name='Фото',
-        upload_to='recipes/'
+        'Название рецепта',
+        max_length=200
     )
-    text = models.TextField(verbose_name='Текст')
+    image = models.ImageField(
+        'Фото рецепта',
+        upload_to='recipes/',
+        null=True,
+        default=None
+    )
+    text = models.TextField(
+        'Описание рецепта'
+    )
     ingredients = models.ManyToManyField(
         Ingredient,
         verbose_name='Ингредиенты',
@@ -92,7 +99,7 @@ class Recipe(models.Model):
         )
     )
     date = models.DateTimeField(
-        verbose_name='Дата публикации',
+        'Дата публикации',
         auto_now_add=True
     )
 
@@ -102,7 +109,7 @@ class Recipe(models.Model):
         ordering = ('-date',)
 
     def __str__(self):
-        return self.name[:MAXLENGTH]
+        return f'{self.author.email}, {self.name[:MAXLENGTH]}'
 
 
 class RecipeIngredient(models.Model):
@@ -123,8 +130,8 @@ class RecipeIngredient(models.Model):
     amount = models.PositiveSmallIntegerField(
         verbose_name='Количество',
         validators=(
-            MinValueValidator(1),
-            MaxValueValidator(32767)
+            MinValueValidator(1, message='Минимальное значение = 1!'),
+            MaxValueValidator(32767, message='Максимальное значение = 32767!')
         )
     )
 
@@ -134,7 +141,7 @@ class RecipeIngredient(models.Model):
         constraints = (
             UniqueConstraint(
                 fields=('recipe', 'ingredient'),
-                name='recipeingredient'
+                name='unique_recipe_ingredient'
             ),
         )
 
@@ -153,7 +160,7 @@ class Favourite(models.Model):
     )
     recipe = models.ForeignKey(
         Recipe,
-        verbose_name='Рецепт',
+        verbose_name='Понравившиеся рецепты',
         on_delete=models.CASCADE,
         related_name='favourites'
     )
@@ -169,7 +176,7 @@ class Favourite(models.Model):
         )
 
     def __str__(self):
-        return f'Добавлено в избранное {self.recipe}'
+        return f'{self.user} добавил {self.recipe} в избранное'
 
 
 class ShoppingCart(models.Model):

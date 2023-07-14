@@ -3,43 +3,69 @@ from django.contrib import admin
 from recipes.models import (Favourite, Ingredient, Recipe, RecipeIngredient,
                             ShoppingCart, Tag)
 
-
-@admin.register(Favourite)
-class FavouriteAdmin(admin.ModelAdmin):
-    list_display = ('user', 'recipe',)
-    search_fields = ('user', 'recipe',)
-
-
-@admin.register(Ingredient)
-class IngredientAdmin(admin.ModelAdmin):
-    list_display = ('pk', 'name', 'measurement_unit')
-    search_fields = ('name', 'measurement_unit')
-    list_filter = ('name', 'measurement_unit')
+EMPTY_STRING: str = '-пусто-'
 
 
 @admin.register(Recipe)
 class RecipeAdmin(admin.ModelAdmin):
-    list_display = ('pk', 'name', 'author', 'text',
-                    'cooking_time', 'image', 'date')
-    search_fields = ('name', 'author', 'text', 'cooking_time')
-    list_filter = ('name', 'author', 'tags')
+    list_display = (
+        'id',
+        'name',
+        'author',
+        'get_ingredients',
+        'get_tags',
+        'count_favourites',
+    )
+    search_fields = ('author__username', 'name', 'tags__name',)
+    list_filter = ('author', 'name', 'tags',)
+
+    def get_ingredients(self, object):
+        return ',\n'.join(
+            ingredient.name for ingredient in object.ingredients.all()
+        )
+
+    get_ingredients.short_description = 'Ингредиенты'
+
+    def get_tags(self, object):
+        return '\n'.join(tag.name for tag in object.tags.all())
+
+    get_tags.short_description = 'Теги'
+
+    def count_favourites(self, object):
+        return object.favourites.count()
+
+    count_favourites.short_description = 'Раз в избранном'
 
 
-@admin.register(RecipeIngredient)
-class RecipeIngredientAdmin(admin.ModelAdmin):
-    list_display = ('pk', 'recipe', 'ingredient', 'amount')
-    search_fields = ('recipe', 'ingredient')
-    list_filter = ('recipe', 'ingredient')
-
-
-@admin.register(ShoppingCart)
-class ShoppingCartAdmin(admin.ModelAdmin):
-    list_display = ('user', 'recipe',)
-    search_fields = ('user', 'recipe',)
+@admin.register(Ingredient)
+class IngredientAdmin(admin.ModelAdmin):
+    list_display = ('name', 'measurement_unit',)
+    search_fields = ('name',)
+    list_filter = ('name',)
 
 
 @admin.register(Tag)
 class TagAdmin(admin.ModelAdmin):
-    list_display = ('pk', 'name', 'color', 'slug')
-    search_fields = ('name', 'color', 'slug')
-    list_filter = ('name', 'color', 'slug')
+    list_display = ('name', 'color', 'slug',)
+
+
+@admin.register(ShoppingCart)
+class ShoppingCartAdmin(admin.ModelAdmin):
+    list_display = ('user', 'recipe', 'get_ingredients',)
+
+    def get_ingredients(self, object):
+        return ',\n'.join(
+            ingredient.name for ingredient in object.recipe.ingredients.all()
+        )
+
+    get_ingredients.short_description = 'Ингредиенты'
+
+
+@admin.register(Favourite)
+class FavouriteAdmin(admin.ModelAdmin):
+    list_display = ('user', 'recipe',)
+
+
+@admin.register(RecipeIngredient)
+class RecipeIngredientAdmin(admin.ModelAdmin):
+    list_display = ('ingredient', 'recipe', 'amount',)
