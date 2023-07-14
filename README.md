@@ -34,6 +34,7 @@ DB_PORT=5432
 - Запустить проект в Docker-контейнерах:
 
 ```
+cd infra
 docker-compose up -d --build
 ```
 
@@ -98,7 +99,7 @@ python manage.py runserver
 ```
 - Открыть документацию:
 ```
-cd ../frontend
+cd ../infra
 docker compose up
 ```
 ### Документация к API с примерами запросов доступна после запуска:
