@@ -1,3 +1,4 @@
+from django.contrib.auth import get_user_model
 from django.db.models.aggregates import Sum
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
@@ -7,7 +8,7 @@ from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import SAFE_METHODS, IsAuthenticated
 from rest_framework.response import Response
-from django.contrib.auth import get_user_model
+
 from api.filters import NameSearchFilter, RecipeFilter
 from api.pagination import CustomPagination
 from api.permissions import IsAdminOrReadOnly, IsAuthorOrReadOnly
