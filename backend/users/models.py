@@ -39,12 +39,12 @@ class User(AbstractUser):
         verbose_name = 'Пользователь'
         verbose_name_plural = 'Пользователи'
         ordering = ('pk',)
-        constraints = (
+        constraints = [
             models.UniqueConstraint(
                 fields=('email', 'username'),
                 name='unique_auth'
-            ),
-        )
+            )
+        ]
 
     def __str__(self):
         return self.username
@@ -70,12 +70,12 @@ class Follow(models.Model):
         verbose_name = 'Подписчик'
         verbose_name_plural = 'Подписчики'
         ordering = ('-pk',)
-        constraints = (
+        constraints = [
             UniqueConstraint(
                 fields=('user', 'author'),
                 name='unique_subscription'
-            ),
-        )
+            )
+        ]
 
     def clean(self):
         if self.user == self.author:

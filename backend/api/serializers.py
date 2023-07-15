@@ -5,11 +5,13 @@ from rest_framework.fields import SerializerMethodField
 from rest_framework.serializers import (ModelSerializer,
                                         PrimaryKeyRelatedField,
                                         ValidationError)
-
+from django.contrib.auth import get_user_model
 from api.fields import Base64ImageField
 from recipes.models import (Favourite, Ingredient, Recipe, RecipeIngredient,
                             ShoppingCart, Tag)
-from users.models import Follow, User
+from users.models import Follow
+
+User = get_user_model()
 
 
 class MyUserSerializer(UserSerializer):

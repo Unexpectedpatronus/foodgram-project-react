@@ -7,7 +7,7 @@ from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import SAFE_METHODS, IsAuthenticated
 from rest_framework.response import Response
-
+from django.contrib.auth import get_user_model
 from api.filters import NameSearchFilter, RecipeFilter
 from api.pagination import CustomPagination
 from api.permissions import IsAdminOrReadOnly, IsAuthorOrReadOnly
@@ -16,7 +16,9 @@ from api.serializers import (FollowSerializer, IngredientSerializer,
                              RecipeGetSerializer, RecipeIngredient,
                              RecipeShowSerializer, TagSerializer)
 from recipes.models import Favourite, Ingredient, Recipe, ShoppingCart, Tag
-from users.models import Follow, User
+from users.models import Follow
+
+User = get_user_model()
 
 SHOP_LIST = 'Список покупок:'
 FILE = 'shopping_list.txt'
