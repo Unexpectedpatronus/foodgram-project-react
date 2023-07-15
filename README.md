@@ -7,9 +7,11 @@
 [![Python](https://img.shields.io/badge/Python-gray?style=flat-square&logo=Python)](https://www.python.org/)
 [![Django](https://img.shields.io/badge/Django-gray?style=flat-square&logo=Django)](https://www.djangoproject.com/)
 [![DjangoREST](https://img.shields.io/badge/Django-REST-gray?style=flat-square&logo=django&logoColor=white&color=ff1709&labelColor=gray)](https://www.django-rest-framework.org/)
+[![Gunicorn](https://img.shields.io/badge/Gunicorn-gray?style=flat-square&logo=gunicorn)](https://gunicorn.org/)
 [![Postgres](https://img.shields.io/badge/Postgres-gray?style=flat-square&logo=postgresql&logoColor=white)](https://www.postgresql.org/)
 [![Docker](https://img.shields.io/badge/Docker-gray?style=flat-square&logo=docker)](https://www.docker.com/)
 [![Nginx](https://img.shields.io/badge/Nginx-gray?style=flat-square&logo=nginx)](https://www.nginx.org/)
+
 
 ###  Запуск проекта в Docker
 - Необходимо склонировать репозиторий с проектом:
