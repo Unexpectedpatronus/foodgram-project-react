@@ -1,68 +1,59 @@
 from django.contrib import admin
 
 from . import models
-
-
-@admin.register(models.Recipe)
-class RecipeAdmin(admin.ModelAdmin):
-    list_display = (
-        'id',
-        'name',
-        'author',
-        'get_ingredients',
-        'get_tags',
-        'count_favourites',
-    )
-    search_fields = ('author__username', 'name', 'tags__name',)
-    list_filter = ('author', 'name', 'tags',)
-
-    def get_ingredients(self, object):
-        return ',\n'.join(
-            ingredient.name for ingredient in object.ingredients.all()
-        )
-
-    get_ingredients.short_description = 'Ингредиенты'
-
-    def get_tags(self, object):
-        return '\n'.join(tag.name for tag in object.tags.all())
-
-    get_tags.short_description = 'Теги'
-
-    def count_favourites(self, object):
-        return object.favourites.count()
-
-    count_favourites.short_description = 'Раз в избранном'
+from .models import Recipe
 
 
 @admin.register(models.Ingredient)
 class IngredientAdmin(admin.ModelAdmin):
-    list_display = ('name', 'measurement_unit',)
-    search_fields = ('name',)
+    list_display = ('name', 'measurement_unit')
     list_filter = ('name',)
+    search_fields = ('name',)
 
 
 @admin.register(models.Tag)
 class TagAdmin(admin.ModelAdmin):
-    list_display = ('name', 'color', 'slug',)
+    list_display = ('name', 'color', 'slug')
+    list_filter = ('name', 'color')
+    search_fields = ('name', 'color')
+
+
+class IngredientsInline(admin.TabularInline):
+    model = models.RecipeIngredient
+    extra = 1
+
+
+@admin.register(Recipe)
+class RecipeAdmin(admin.ModelAdmin):
+    list_display = ('name', 'author', 'text', 'added_to_favorite')
+    list_filter = ('author', 'name', 'tags')
+    inlines = (IngredientsInline,)
+
+    @staticmethod
+    def added_to_favorite(obj):
+        return obj.favorite.count()
+
+
+@admin.register(models.RecipeIngredient)
+class RecipeIngredientAdmin(admin.ModelAdmin):
+    list_display = ('pk', 'recipe', 'ingredient', 'amount')
+    list_filter = ('recipe', 'ingredient')
+    search_fields = ('recipe', 'ingredient')
+
+    @staticmethod
+    def added_to_favorite(obj):
+        return obj.favorite.count()
+
+
+@admin.register(models.Favorite)
+class FavoriteAdmin(admin.ModelAdmin):
+    list_display = ('pk', 'user', 'recipe')
+    list_filter = ('user', 'recipe')
+    search_fields = ('user', 'recipe')
 
 
 @admin.register(models.ShoppingCart)
 class ShoppingCartAdmin(admin.ModelAdmin):
-    list_display = ('user', 'recipe', 'get_ingredients',)
-
-    def get_ingredients(self, object):
-        return ',\n'.join(
-            ingredient.name for ingredient in object.recipe.ingredients.all()
-        )
-
-    get_ingredients.short_description = 'Ингредиенты'
-
-
-@admin.register(models.Favourite)
-class FavouriteAdmin(admin.ModelAdmin):
-    list_display = ('user', 'recipe',)
-
-
-@admin.register(models.IngredientAmountInRecipe)
-class IngredientAmountInRecipeAdmin(admin.ModelAdmin):
-    list_display = ('ingredient', 'recipe', 'amount',)
+    list_display = ('pk', 'user', 'recipe')
+    list_filter = ('user', 'recipe')
+    search_fields = ('user', 'recipe')

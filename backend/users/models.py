@@ -1,98 +1,97 @@
 from django.contrib.auth.models import AbstractUser
-from django.core.validators import RegexValidator
 from django.db import models
-
-from foodgram.global_constants import (EMAIL_LENGTH, FIRST_NAME_LENGTH,
-                                       LAST_NAME_LENGTH, PASSWORD_LENGTH,
-                                       ROLE_LENGTH, USERNAME_LENGTH)
-
-ROLE = (
-    ('user', 'Пользователь'),
-    ('admin', 'Администратор'),
-)
 
 
 class User(AbstractUser):
-    '''
-    Кастомная модель пользователя.
-    '''
-    username = models.CharField(
-        'Имя пользователя',
-        max_length=USERNAME_LENGTH,
-        unique=True,
-        validators=[
-            RegexValidator(regex=r'^[\w.@+-]',
-                           message='Недопустимые символы в имени пользователя')
-        ]
-    )
+    USERNAME_FIELD = 'email'
+    REQUIRED_FIELDS = ('username', 'first_name', 'last_name', 'password')
+
+    GUEST = 'guest'
+    AUTHORIZED = 'authorized'
+    ADMIN = 'admin'
+
+    USER_ROLES = [
+        (GUEST, 'guest'),
+        (AUTHORIZED, 'authorized'),
+        (ADMIN, 'admin'),
+    ]
+
     email = models.EmailField(
-        'Электронная почта',
-        max_length=EMAIL_LENGTH,
+        max_length=254,
         unique=True,
+        verbose_name='Email',
+    )
+    username = models.CharField(
+        blank=False,
+        max_length=150,
+        unique=True,
+        verbose_name='Username',
     )
     first_name = models.CharField(
-        'Имя',
-        max_length=FIRST_NAME_LENGTH,
-        blank=True,
+        blank=False,
+        max_length=150,
+        verbose_name='First Name',
     )
     last_name = models.CharField(
-        'Фамилия',
-        max_length=LAST_NAME_LENGTH,
-        blank=True,
-    )
-    role = models.CharField(
-        'Роль',
-        choices=ROLE,
-        max_length=ROLE_LENGTH,
-        default='user',
+        blank=False,
+        max_length=150,
+        verbose_name='Last Name',
     )
     password = models.CharField(
-        'Пароль',
-        max_length=PASSWORD_LENGTH,
-        blank=True,
-        null=True,
+        max_length=150,
+        verbose_name='Password',
+    )
+    role = models.CharField(
+        default='guest',
+        choices=USER_ROLES,
+        max_length=10,
+        verbose_name='User Role',
     )
 
-    class Meta:
-        ordering = ['-date_joined', ]
-        verbose_name = 'Пользователь'
-        verbose_name_plural = 'Пользователи'
+    @property
+    def is_guest(self):
+        return self.role == self.GUEST
+
+    @property
+    def is_authorized(self):
+        return self.role == self.AUTHORIZED
 
     @property
     def is_admin(self):
-        return self.role == User.ROLE[1][0]
+        return self.role == self.ADMIN or self.is_superuser
 
-    def __str__(self) -> str:
+    class Meta:
+        ordering = ['id']
+        verbose_name = 'Пользователь'
+        verbose_name_plural = 'Пользователи'
+
+    def __str__(self):
         return self.username
 
 
 class Subscribe(models.Model):
-    '''
-    Модель реализации подписки на авторов рецептов.
-    '''
-    subscriber = models.ForeignKey(
+    user = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
         related_name='subscriber',
-        verbose_name='Подписчик',
-        help_text='Подписчик автора рецепта'
+        verbose_name='Подписчик'
     )
     author = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
-        related_name='author',
-        verbose_name='Автор',
-        help_text='Автор рецепта'
+        related_name='subscribing',
+        verbose_name='Подписан'
     )
 
-    class Meta:
-        verbose_name = 'Подписка'
-        verbose_name_plural = 'Подписки'
-        constraints = [models.UniqueConstraint(
-            fields=['author', 'subscriber'],
-            name='unique_subscription'
-        )]
+    def __str__(self):
+        return f'{self.user.username} - {self.author.username}'
 
-    def __str__(self) -> str:
-        return (f'Пользователь {self.subscriber.username}'
-                f' подписан на {self.author.username}')
+    class Meta:
+        verbose_name = 'Подписка на авторов'
+        verbose_name_plural = 'Подписки на авторов'
+        constraints = [
+            models.UniqueConstraint(
+                fields=['user', 'author'],
+                name='unique_subscribe'
+            )
+        ]
