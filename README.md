@@ -44,10 +44,10 @@ docker-compose up -d --build
 - Будут созданы и запущены в фоновом режиме необходимые для работы приложения контейнеры: db, backend, nginx (а так же запущен и остановлен контейнер frontend, который необходим для раздачи статики). Внутри контейнера backend необходимо выполнить миграции, создать суперпользователя и собрать статику:
 
 ```
-docker-compose exec backend python manage.py migrate --no-input
-docker-compose exec backend python manage.py collectstatic --no-input
+docker compose exec backend python manage.py migrate --no-input
+docker compose exec backend python manage.py collectstatic --no-input
 docker compose exec -T backend cp -r /app/static/. /backend_static/
-docker-compose exec backend python manage.py createsuperuser
+docker compose exec backend python manage.py createsuperuser
 ```
 
 ### Запуск проекта локально
