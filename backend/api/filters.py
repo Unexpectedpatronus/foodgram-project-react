@@ -43,3 +43,7 @@ class IngredientFilter(SearchFilter):
     """Класс для фильтрации обьектов Tags."""
 
     search_param = 'name'
+
+    class Meta:
+        model = Tag
+        fields = ('name',)

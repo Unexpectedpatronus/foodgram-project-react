@@ -2,8 +2,7 @@ from colorfield.fields import ColorField
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 
-from foodgram.global_constants import (COLOR_NAME_LENGTH,
-                                       INGREDIENT_NAME_LENGTH, MAXLENGTH,
+from foodgram.global_constants import (INGREDIENT_NAME_LENGTH, MAXLENGTH,
                                        MEASUREMENT_UNIT_LENGTH,
                                        RECIPE_NAME_LENGTH, SLUG_LENGTH,
                                        TAG_NAME_LENGTH)
@@ -71,7 +70,8 @@ class Ingredient(models.Model):
         ]
 
     def __str__(self):
-        return f'{self.name} ({self.measurement_unit}).'
+        return (f'{self.name[:MAXLENGTH]} '
+                f'({self.measurement_unit[:MAXLENGTH]}).')
 
 
 class Recipe(models.Model):
@@ -135,8 +135,7 @@ class Recipe(models.Model):
         ]
 
     def __str__(self):
-        return (f'{self.author[:MAXLENGTH]},'
-                f' автор {self.name[:MAXLENGTH]}')
+        return f'{self.author}, автор {self.name}'
 
 
 class IngredientInRecipesAmount(models.Model):
