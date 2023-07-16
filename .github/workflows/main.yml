@@ -122,7 +122,6 @@ jobs:
             echo CSRF_TRUSTED_ORIGINS=${{ secrets.CSRF_TRUSTED_ORIGINS }} >> .env
             cd infra
             sudo docker compose down
-            sudo docker system prune -af
             sudo docker compose up -d --build
             sudo docker compose exec -T backend python manage.py makemigrations
             sudo docker compose exec -T backend python manage.py migrate --no-input
@@ -131,6 +130,7 @@ jobs:
             sudo docker compose exec -T backend python manage.py load_tags
             sudo docker compose exec -T backend python manage.py load_data
             sudo docker image prune -af
+            sudo docker system prune -af
 
   send_message:
     runs-on: ubuntu-latest
