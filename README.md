@@ -17,7 +17,7 @@
 - Необходимо склонировать репозиторий с проектом:
 
 ```
-git clone git@github.com:гтучзусеувзфекщтгы/foodgram-project-react.git
+git clone git@github.com:Unexpectedpatronus/foodgram-project-react.git
 ```
 
 - В корневой директории необходимо создать файл .env, содержащий переменные окружения 
