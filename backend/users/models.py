@@ -2,14 +2,9 @@ from django.contrib.auth.models import AbstractUser
 from django.core.validators import RegexValidator
 from django.db import models
 
-from foodgram.global_constants import (
-    USERNAME_LENGTH,
-    EMAIL_LENGTH,
-    FIRST_NAME_LENGTH,
-    LAST_NAME_LENGTH,
-    ROLE_LENGTH,
-    PASSWORD_LENGTH,
-)
+from foodgram.global_constants import (EMAIL_LENGTH, FIRST_NAME_LENGTH,
+                                       LAST_NAME_LENGTH, PASSWORD_LENGTH,
+                                       ROLE_LENGTH, USERNAME_LENGTH)
 
 ROLE = (
     ('user', 'Пользователь'),
