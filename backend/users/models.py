@@ -1,97 +1,103 @@
 from django.contrib.auth.models import AbstractUser
+from django.core.validators import RegexValidator
 from django.db import models
+
+from foodgram.global_constants import (
+    USERNAME_LENGTH,
+    EMAIL_LENGTH,
+    FIRST_NAME_LENGTH,
+    LAST_NAME_LENGTH,
+    ROLE_LENGTH,
+    PASSWORD_LENGTH,
+)
+
+ROLE = (
+    ('user', 'Пользователь'),
+    ('admin', 'Администратор'),
+)
 
 
 class User(AbstractUser):
-    USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = ('username', 'first_name', 'last_name', 'password')
-
-    GUEST = 'guest'
-    AUTHORIZED = 'authorized'
-    ADMIN = 'admin'
-
-    USER_ROLES = [
-        (GUEST, 'guest'),
-        (AUTHORIZED, 'authorized'),
-        (ADMIN, 'admin'),
-    ]
-
-    email = models.EmailField(
-        max_length=254,
-        unique=True,
-        verbose_name='Email',
-    )
+    '''
+    Кастомная модель пользователя.
+    '''
     username = models.CharField(
-        blank=False,
-        max_length=150,
+        'Имя пользователя',
+        max_length=USERNAME_LENGTH,
         unique=True,
-        verbose_name='Username',
+        validators=[
+            RegexValidator(regex=r'^[\w.@+-]',
+                           message='Недопустимые символы в имени пользователя')
+        ]
+    )
+    email = models.EmailField(
+        'Электронная почта',
+        max_length=EMAIL_LENGTH,
+        unique=True,
     )
     first_name = models.CharField(
-        blank=False,
-        max_length=150,
-        verbose_name='First Name',
+        'Имя',
+        max_length=FIRST_NAME_LENGTH,
+        blank=True,
     )
     last_name = models.CharField(
-        blank=False,
-        max_length=150,
-        verbose_name='Last Name',
-    )
-    password = models.CharField(
-        max_length=150,
-        verbose_name='Password',
+        'Фамилия',
+        max_length=LAST_NAME_LENGTH,
+        blank=True,
     )
     role = models.CharField(
-        default='guest',
-        choices=USER_ROLES,
-        max_length=10,
-        verbose_name='User Role',
+        'Роль',
+        choices=ROLE,
+        max_length=ROLE_LENGTH,
+        default='user',
+    )
+    password = models.CharField(
+        'Пароль',
+        max_length=PASSWORD_LENGTH,
+        blank=True,
+        null=True,
     )
 
-    @property
-    def is_guest(self):
-        return self.role == self.GUEST
-
-    @property
-    def is_authorized(self):
-        return self.role == self.AUTHORIZED
-
-    @property
-    def is_admin(self):
-        return self.role == self.ADMIN or self.is_superuser
-
     class Meta:
-        ordering = ['id']
+        ordering = ['-date_joined', ]
         verbose_name = 'Пользователь'
         verbose_name_plural = 'Пользователи'
 
-    def __str__(self):
+    @property
+    def is_admin(self):
+        return self.role == User.ROLE[1][0]
+
+    def __str__(self) -> str:
         return self.username
 
 
 class Subscribe(models.Model):
-    user = models.ForeignKey(
+    '''
+    Модель реализации подписки на авторов рецептов.
+    '''
+    subscriber = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
         related_name='subscriber',
-        verbose_name='Подписчик'
+        verbose_name='Подписчик',
+        help_text='Подписчик автора рецепта'
     )
     author = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
-        related_name='subscribing',
-        verbose_name='Подписан'
+        related_name='author',
+        verbose_name='Автор',
+        help_text='Автор рецепта'
     )
 
-    def __str__(self):
-        return f'{self.user.username} - {self.author.username}'
-
     class Meta:
-        verbose_name = 'Подписка на авторов'
-        verbose_name_plural = 'Подписки на авторов'
-        constraints = [
-            models.UniqueConstraint(
-                fields=['user', 'author'],
-                name='unique_subscribe'
-            )
-        ]
+        verbose_name = 'Подписка'
+        verbose_name_plural = 'Подписки'
+        constraints = [models.UniqueConstraint(
+            fields=['author', 'subscriber'],
+            name='unique_subscription'
+        )]
+
+    def __str__(self) -> str:
+        return (f'Пользователь {self.subscriber.username}'
+                f' подписан на {self.author.username}')
