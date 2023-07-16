@@ -71,7 +71,7 @@ else:
             'NAME': config('DB_NAME', default='postgres'),
             'USER': config('POSTGRES_USER', default='postgres'),
             'PASSWORD': config('POSTGRES_PASSWORD', default='postgres'),
-            'HOST': config('DB_HOST', default='127.0.0.1'),
+            'HOST': config('DB_HOST', default='db'),
             'PORT': config('DB_PORT', default=5432, cast=int),
         }
     }
@@ -112,28 +112,26 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 AUTH_USER_MODEL = 'users.User'
 
 DJOSER = {
+    'LOGIN_FIELD': 'email',
+    'HIDE_USERS': False,
     'SERIALIZERS': {
-        'current_user': 'api.serializers.MyUserSerializer',
-        'user': 'api.serializers.MyUserSerializer',
+        'user': 'api.serializers.CustomUserSerializer',
+        'user_list': 'api.serializers.CustomUserSerializer',
+        'current_user': 'api.serializers.CustomUserSerializer',
+        'user_create': 'api.serializers.UserCreateSerializer',
     },
     'PERMISSIONS': {
-        'set_username': ['rest_framework.permissions.IsAdminUser'],
-        'user': ['rest_framework.permissions.AllowAny'],
-        'user_list': ['rest_framework.permissions.AllowAny'],
-        'user_delete': ['rest_framework.permissions.IsAdminUser'],
-    },
-    'HIDE_USERS': False,
+        'user': ('rest_framework.permissions.IsAuthenticated',),
+        'user_list': ('rest_framework.permissions.AllowAny',),
+    }
 }
 
 REST_FRAMEWORK = {
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.AllowAny',
+    ],
+
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework.authentication.TokenAuthentication',
-    ],
-
-    'DEFAULT_PERMISSION_CLASSES': [
-        'rest_framework.permissions.IsAuthenticated',
-    ],
-
-    'DEFAULT_PAGINATION_CLASS': 'api.pagination.CustomPagination',
-    'PAGE_SIZE': 6,
+    ]
 }
