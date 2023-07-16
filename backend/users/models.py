@@ -1,98 +1,74 @@
 from django.contrib.auth.models import AbstractUser
-from django.core.validators import RegexValidator
 from django.db import models
-
-from foodgram.global_constants import (EMAIL_LENGTH, FIRST_NAME_LENGTH,
-                                       LAST_NAME_LENGTH, PASSWORD_LENGTH,
-                                       ROLE_LENGTH, USERNAME_LENGTH)
-
-ROLE = (
-    ('user', 'Пользователь'),
-    ('admin', 'Администратор'),
-)
 
 
 class User(AbstractUser):
-    '''
-    Кастомная модель пользователя.
-    '''
-    username = models.CharField(
-        'Имя пользователя',
-        max_length=USERNAME_LENGTH,
-        unique=True,
-        validators=[
-            RegexValidator(regex=r'^[\w.@+-]',
-                           message='Недопустимые символы в имени пользователя')
-        ]
-    )
+    """Кастомная модель пользователя."""
+
     email = models.EmailField(
-        'Электронная почта',
-        max_length=EMAIL_LENGTH,
+        'Адрес электронной почты',
+        max_length=254,
         unique=True,
+        null=False
+    )
+    username = models.CharField(
+        'Юзернейм',
+        max_length=150,
+        unique=True,
+        null=False
     )
     first_name = models.CharField(
         'Имя',
-        max_length=FIRST_NAME_LENGTH,
+        max_length=150,
         blank=True,
+        null=False
     )
     last_name = models.CharField(
         'Фамилия',
-        max_length=LAST_NAME_LENGTH,
+        max_length=150,
         blank=True,
-    )
-    role = models.CharField(
-        'Роль',
-        choices=ROLE,
-        max_length=ROLE_LENGTH,
-        default='user',
+        null=False
     )
     password = models.CharField(
         'Пароль',
-        max_length=PASSWORD_LENGTH,
-        blank=True,
-        null=True,
+        max_length=150,
+        blank=False,
+        null=False
     )
+
+    USERNAME_FIELD = 'email'
+    REQUIRED_FIELDS = ('username', 'first_name', 'last_name',)
 
     class Meta:
-        ordering = ['-date_joined', ]
         verbose_name = 'Пользователь'
-        verbose_name_plural = 'Пользователи'
+        verbose_name_plural = 'пользователи'
 
-    @property
-    def is_admin(self):
-        return self.role == User.ROLE[1][0]
-
-    def __str__(self) -> str:
-        return self.username
+    def __str__(self):
+        return self.email
 
 
-class Subscribe(models.Model):
-    '''
-    Модель реализации подписки на авторов рецептов.
-    '''
-    subscriber = models.ForeignKey(
+class Follow(models.Model):
+    """Модель для подписки на авторов."""
+    user = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
-        related_name='subscriber',
+        related_name='follower',
         verbose_name='Подписчик',
-        help_text='Подписчик автора рецепта'
     )
+
     author = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
-        related_name='author',
+        related_name='following',
         verbose_name='Автор',
-        help_text='Автор рецепта'
     )
 
     class Meta:
         verbose_name = 'Подписка'
         verbose_name_plural = 'Подписки'
-        constraints = [models.UniqueConstraint(
-            fields=['author', 'subscriber'],
-            name='unique_subscription'
-        )]
-
-    def __str__(self) -> str:
-        return (f'Пользователь {self.subscriber.username}'
-                f' подписан на {self.author.username}')
+        ordering = ('user',)
+        constraints = [
+            models.UniqueConstraint(
+                fields=['user', 'author'],
+                name='unique_follow'
+            )]
