@@ -1,14 +1,12 @@
 from colorfield.fields import ColorField
-from django.contrib.auth import get_user_model
-from django.core.validators import (MaxValueValidator, MinLengthValidator,
-                                    MinValueValidator)
+from django.core.validators import (MaxValueValidator, MinValueValidator,
+                                    RegexValidator)
 from django.db import models
 from django.db.models import UniqueConstraint
-from django.db.models.functions import Length
+
+from users.models import User
 
 MAXLENGTH: int = 15
-models.CharField.register_lookup(Length)
-User = get_user_model()
 
 
 class Tag(models.Model):
@@ -18,9 +16,6 @@ class Tag(models.Model):
         'Имя тега',
         max_length=200,
         unique=True,
-        validators=[
-            MinLengthValidator(1, message='Должен быть минимум 1 символ!')
-        ]
     )
     COLOR_PALETTE = [
         ("#E26C2D", "Завтрак",),
@@ -30,19 +25,32 @@ class Tag(models.Model):
     color = ColorField(
         format="hexa",
         samples=COLOR_PALETTE,
-        unique=True
+        unique=True,
+        validators=[
+            RegexValidator(
+                regex=r'^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$',
+                message='Цвет должен быть в формате HEX'
+            )
+        ],
+        max_length=7,
     )
 
     slug = models.SlugField(
         'Слаг',
-        max_length=200,
-        unique=True
+        max_length=30,
+        unique=True,
     )
 
     class Meta:
         verbose_name = 'Тег'
         verbose_name_plural = 'Теги'
-        ordering = ['-id']
+        ordering = ('name',)
+        constraints = [
+            UniqueConstraint(
+                fields=('name', 'slug'),
+                name='unique_name_slug'
+            )
+        ]
 
     def __str__(self):
         return self.name[:MAXLENGTH]
@@ -54,16 +62,11 @@ class Ingredient(models.Model):
     name = models.CharField(
         'Название ингредиента',
         max_length=200,
-        validators=[
-            MinLengthValidator(1, message='Должен быть минимум 1 символ!')
-        ]
     )
     measurement_unit = models.CharField(
         'Единица измерения ингредиента',
         max_length=20,
-        validators=[
-            MinLengthValidator(1, message='Должен быть минимум 1 символ!')
-        ]
+        default=None,
     )
 
     class Meta:
@@ -73,7 +76,7 @@ class Ingredient(models.Model):
         constraints = [
             UniqueConstraint(
                 fields=('name', 'measurement_unit'),
-                name='unique_name_measurement_unit'
+                name='unique_ingredient_measurement_unit'
             )
         ]
 
@@ -87,9 +90,6 @@ class Recipe(models.Model):
         'Название рецепта',
         max_length=200,
         unique=True,
-        validators=[
-            MinLengthValidator(1, message='Должен быть минимум 1 символ!')
-        ]
     )
     author = models.ForeignKey(
         User,
@@ -98,23 +98,24 @@ class Recipe(models.Model):
         related_name='recipes',
     )
     image = models.ImageField(
-        'Фото рецепта',
+        'Изображение',
         upload_to='recipes/',
-        null=True,
-        default=None
+        default=None,
+        help_text='Загрузить изображение',
     )
     text = models.TextField(
-        'Описание рецепта'
+        'Описание рецепта',
+        help_text='Текст описания рецепта',
     )
     ingredients = models.ManyToManyField(
         Ingredient,
         verbose_name='Ингредиенты',
         through='RecipeIngredient',
-        related_name='recipes'
+        related_name='recipes',
     )
     tags = models.ManyToManyField(
         Tag,
-        verbose_name='Тег',
+        verbose_name='Теги',
         related_name='recipes',
     )
     cooking_time = models.PositiveSmallIntegerField(
@@ -162,6 +163,7 @@ class RecipeIngredient(models.Model):
     )
     amount = models.PositiveSmallIntegerField(
         verbose_name='Количество',
+        null=False,
         validators=(
             MinValueValidator(1, message='Минимальное значение = 1!'),
             MaxValueValidator(32767, message='Максимальное значение = 32767!')
