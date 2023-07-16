@@ -1,7 +1,7 @@
 import base64
 
 from django.core.files.base import ContentFile
-from rest_framework.serializers import (ImageField, ModelSerializer, CharField,
+from rest_framework.serializers import (CharField, ImageField, ModelSerializer,
                                         PrimaryKeyRelatedField, ReadOnlyField,
                                         SerializerMethodField, ValidationError)
 
