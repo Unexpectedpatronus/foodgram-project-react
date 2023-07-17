@@ -46,9 +46,9 @@ class Tag(models.Model):
 
     def clean(self):
         self.color = self.color.lower().strip()
-        self.name = self.name.strip().lower()
-        self.slug = self.slug.strip().lower()
-        return super().clean()
+        self.name = self.name.lower().strip()
+        self.slug = self.slug.lower().strip()
+        super().clean()
 
 
 class Ingredient(models.Model):
@@ -158,7 +158,7 @@ class Recipe(models.Model):
             raise ValidationError(
                 {'name': 'Рецепт с таким названием уже существует!'}
             )
-        return super().clean()
+        super().clean()
 
 
 class IngredientInRecipesAmount(models.Model):
