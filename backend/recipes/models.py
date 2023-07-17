@@ -1,4 +1,5 @@
 from colorfield.fields import ColorField
+from django.core.exceptions import ValidationError
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 
@@ -43,6 +44,12 @@ class Tag(models.Model):
     def __str__(self):
         return self.name[:MAXLENGTH]
 
+    def clean(self):
+        self.color = self.color.lower().strip()
+        self.name = self.name.strip().lower()
+        self.slug = self.slug.strip().lower()
+        return super().clean()
+
 
 class Ingredient(models.Model):
     """Модель ингредиента."""
@@ -72,6 +79,11 @@ class Ingredient(models.Model):
     def __str__(self):
         return (f'{self.name[:MAXLENGTH]} '
                 f'({self.measurement_unit[:MAXLENGTH]}).')
+
+    def clean(self):
+        self.name = self.name.lower()
+        self.measurement_unit = self.measurement_unit.lower()
+        super().clean()
 
 
 class Recipe(models.Model):
@@ -136,6 +148,17 @@ class Recipe(models.Model):
 
     def __str__(self):
         return f'{self.author}, автор {self.name}'
+
+    def clean(self):
+        self.name = self.name.capitalize()
+        existing_recipe = Recipe.objects.filter(
+            name=self.name
+        ).exclude(id=self.id).first()
+        if existing_recipe:
+            raise ValidationError(
+                {'name': 'Рецепт с таким названием уже существует!'}
+            )
+        return super().clean()
 
 
 class IngredientInRecipesAmount(models.Model):

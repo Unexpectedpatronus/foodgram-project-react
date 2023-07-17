@@ -21,7 +21,7 @@ services:
     image: unexpectedpatronus/foodgram_backend:latest
     restart: always
     volumes:
-      - static_volume:/backend_static
+      - static_volume:/backend_static/
       - media_volume:/app/media/
     env_file:
       - ../.env
