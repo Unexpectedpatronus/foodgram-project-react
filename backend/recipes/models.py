@@ -48,6 +48,15 @@ class Tag(models.Model):
         self.color = self.color.lower().strip()
         self.name = self.name.lower().strip()
         self.slug = self.slug.lower().strip()
+        existing_tag = Tag.objects.filter(
+            color=self.color,
+            name=self.name,
+            slug=self.slug,
+        ).exclude(id=self.id).first()
+        if existing_tag:
+            raise ValidationError(
+                'Такие цвет, название или слаг уже существуют!'
+            )
         super().clean()
 
 
