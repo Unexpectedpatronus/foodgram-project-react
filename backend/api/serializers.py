@@ -12,9 +12,10 @@ from users.models import Follow, User
 
 class IngredientSerializer(ModelSerializer):
     """Сериализатор объектов типа Ingredients. Список ингредиентов."""
+
     class Meta:
         model = Ingredient
-        fields = ('id', 'name', 'measurement_unit', )
+        fields = ('id', 'name', 'measurement_unit',)
 
 
 class IngredientsInRecipeReadSerializer(ModelSerializer):
@@ -77,11 +78,11 @@ class UserSerializer(ModelSerializer):
         )
 
     def get_is_subscribed(self, obj):
-
         user = self.context.get('request').user
-        if user is None or user.is_anonymous:
-            return False
-        return user.follower.filter(author=obj).exists()
+        return bool(
+            user and not user.is_anonymous
+            and user.follower.filter(author=obj).exists()
+        )
 
 
 class UserCreateSerializer(ModelSerializer):
@@ -212,15 +213,15 @@ class RecipesReadSerializer(ModelSerializer):
     def get_is_favorited(self, obj):
         user = self.context.get('request').user
         return (
-            user.is_authenticated
-            and obj.favorite_recipes.filter(user=user).exists()
+                user.is_authenticated
+                and obj.favorite_recipes.filter(user=user).exists()
         )
 
     def get_is_in_shopping_cart(self, obj):
         user = self.context.get('request').user
         return (
-            user.is_authenticated
-            and obj.shopping_recipes.filter(user=user).exists()
+                user.is_authenticated
+                and obj.shopping_recipes.filter(user=user).exists()
         )
 
 
@@ -307,7 +308,7 @@ class RecipesWriteSerializer(ModelSerializer):
     def update(self, instance, validated_data):
         request = self.context.get('request')
         if request.user.is_authenticated and \
-           request.user.id == instance.author_id:
+                request.user.id == instance.author_id:
             tags = validated_data.pop('tags')
             instance.tags.clear()
             instance.tags.set(tags)
