@@ -26,7 +26,6 @@ class Tag(models.Model):
     color = ColorField(
         format="hexa",
         samples=COLOR_PALETTE,
-        unique=True
     )
     slug = models.SlugField(
         'Слаг',
