@@ -250,6 +250,7 @@ class RecipesWriteSerializer(ModelSerializer):
         tags = data['tags']
         cooking_time = data['cooking_time']
         ingredients_list = []
+        name = data.get('name')
         if not ingredients:
             raise ValidationError({
                 'Укажите ингредиенты!'
@@ -274,6 +275,16 @@ class RecipesWriteSerializer(ModelSerializer):
             raise ValidationError({
                 'Время приготовления не может быть = 0!'
             })
+        if name:
+            existing_recipes = Recipe.objects.filter(name=name)
+            if self.instance:
+                existing_recipes = existing_recipes.exclude(
+                    id=self.instance.id
+                )
+            if existing_recipes.exists():
+                raise ValidationError(
+                    'Рецепт с таким названием уже существует!'
+                )
         return data
 
     def validate_name(self, value):
@@ -314,4 +325,3 @@ class RecipesWriteSerializer(ModelSerializer):
             return super().update(instance, validated_data)
         else:
             raise ValidationError('Вы не можете редактировать этот рецепт')
-            return instance
