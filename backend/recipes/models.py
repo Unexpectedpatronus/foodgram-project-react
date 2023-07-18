@@ -159,7 +159,7 @@ class Recipe(models.Model):
         return f'{self.author}, автор {self.name}'
 
     def clean(self):
-        self.name = self.name.capitalize().strip()
+        self.name = self.name.lower().capitalize().strip()
         existing_recipe = Recipe.objects.filter(
             name=self.name
         ).exclude(id=self.id).first()
