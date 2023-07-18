@@ -11,6 +11,8 @@
 [![Postgres](https://img.shields.io/badge/Postgres-gray?style=flat-square&logo=postgresql&logoColor=white)](https://www.postgresql.org/)
 [![Docker](https://img.shields.io/badge/Docker-gray?style=flat-square&logo=docker)](https://www.docker.com/)
 [![Nginx](https://img.shields.io/badge/Nginx-gray?style=flat-square&logo=nginx)](https://www.nginx.org/)
+[![Postman](https://img.shields.io/badge/Postman-gray?style=flat-square&logo=postman)](https://www.postman.com/)
+[![Telegram API](https://img.shields.io/badge/Telegram-API-gray?style=flat-square&logo=telegram)](https://core.telegram.org/)
 
 
 ###  Запуск проекта в Docker
